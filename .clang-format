@@ -1,6 +1,6 @@
 Language: Cpp
 MaxEmptyLinesToKeep: 1
-SpaceBeforeParens: Always
+SpaceBeforeParens: ControlStatementsExceptForEachMacros
 SpaceInEmptyParentheses: false
 SpacesInContainerLiterals: true
 BasedOnStyle: LLVM
