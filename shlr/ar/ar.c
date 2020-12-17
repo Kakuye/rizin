@@ -18,36 +18,36 @@ static int index_filename = -2;
 RZ_API RzBuffer *ar_open_file(const char *arname, const char *filename) {
 	int r;
 	RzList *files = NULL;
-	RzBuffer *b = rz_buf_new_file (arname, O_RDWR, 0);
+	RzBuffer *b = rz_buf_new_file(arname, O_RDWR, 0);
 	if (!b) {
-		rz_sys_perror (__FUNCTION__);
+		rz_sys_perror(__FUNCTION__);
 		return NULL;
 	}
 
 	/* Read magic header */
-	char *buffer = calloc (1, BUF_SIZE + 1);
+	char *buffer = calloc(1, BUF_SIZE + 1);
 	if (!buffer) {
 		return NULL;
 	}
-	r = ar_read_header (b, buffer);
+	r = ar_read_header(b, buffer);
 	if (!r) {
 		goto fail;
 	}
-	files = rz_list_new ();
+	files = rz_list_new();
 	/* Parse archive */
-	ar_read_file (b, buffer, true, NULL, NULL);
-	ar_read_filename_table (b, buffer, files, filename);
+	ar_read_file(b, buffer, true, NULL, NULL);
+	ar_read_filename_table(b, buffer, files, filename);
 
 	/* If b->base is set, then we found the file root in the archive */
 	while (r) {
-		r = ar_read_file (b, buffer, false, files, filename);
+		r = ar_read_file(b, buffer, false, files, filename);
 	}
 
 	if (!filename) {
 		RzListIter *iter;
 		char *name;
-		rz_list_foreach (files, iter, name) {
-			printf ("%s\n", name);
+		rz_list_foreach(files, iter, name) {
+			printf("%s\n", name);
 		}
 		goto fail;
 	}
@@ -56,43 +56,43 @@ RZ_API RzBuffer *ar_open_file(const char *arname, const char *filename) {
 		goto fail;
 	}
 
-	free (buffer);
-	rz_list_free (files);
+	free(buffer);
+	rz_list_free(files);
 	return b;
 fail:
-	rz_list_free (files);
-	free (buffer);
-	ar_close (b);
+	rz_list_free(files);
+	free(buffer);
+	ar_close(b);
 	return NULL;
 }
 
 RZ_API int ar_close(RzBuffer *b) {
-	rz_buf_free (b);
+	rz_buf_free(b);
 	return 0;
 }
 
 RZ_API int ar_read_at(RzBuffer *b, ut64 off, void *buf, int count) {
-	return rz_buf_read_at (b, off, buf, count);
+	return rz_buf_read_at(b, off, buf, count);
 }
 
 RZ_API int ar_write_at(RzBuffer *b, ut64 off, void *buf, int count) {
-	return rz_buf_write_at (b, off, buf, count);
+	return rz_buf_write_at(b, off, buf, count);
 }
 
 int ar_read(RzBuffer *b, void *dest, int len) {
-	int r = rz_buf_read (b, dest, len);
+	int r = rz_buf_read(b, dest, len);
 	if (!r) {
 		return 0;
 	}
-	rz_buf_seek (b, r, RZ_BUF_CUR);
+	rz_buf_seek(b, r, RZ_BUF_CUR);
 	return r;
 }
 
 int ar_read_until_slash(RzBuffer *b, char *buffer, int limit) {
 	ut32 i = 0;
-	ut32 lim = (limit && limit < BUF_SIZE)? limit: BUF_SIZE;
+	ut32 lim = (limit && limit < BUF_SIZE) ? limit : BUF_SIZE;
 	while (i < lim) {
-		ar_read (b, buffer + i, 1);
+		ar_read(b, buffer + i, 1);
 		if (buffer[i] == '/') {
 			break;
 		}
@@ -103,12 +103,12 @@ int ar_read_until_slash(RzBuffer *b, char *buffer, int limit) {
 }
 
 int ar_read_header(RzBuffer *b, char *buffer) {
-	int r = ar_read (b, buffer, 8);
+	int r = ar_read(b, buffer, 8);
 	if (!r) {
 		return 0;
 	}
-	if (strncmp (buffer, AR_MAGIC_HEADER, 8)) {
-		eprintf ("Wrong file type.\n");
+	if (strncmp(buffer, AR_MAGIC_HEADER, 8)) {
+		eprintf("Wrong file type.\n");
 		return 0;
 	}
 	return r;
@@ -123,51 +123,51 @@ int ar_read_file(RzBuffer *b, char *buffer, bool lookup, RzList *files, const ch
 
 	/* File identifier */
 	if (lookup) {
-		ar_read (b, buffer, AR_FILENAME_LEN);
+		ar_read(b, buffer, AR_FILENAME_LEN);
 	} else {
-		ar_read (b, buffer, 2);
+		ar_read(b, buffer, 2);
 		/* Fix padding issues */
 		if (*buffer == '\n') {
 			buffer[0] = buffer[1];
-			rz_buf_seek (b, -1, RZ_BUF_CUR);
-			ar_read (b, buffer, 2);
+			rz_buf_seek(b, -1, RZ_BUF_CUR);
+			ar_read(b, buffer, 2);
 		}
-		ar_read (b, buffer + 2, AR_FILENAME_LEN - 2);
+		ar_read(b, buffer + 2, AR_FILENAME_LEN - 2);
 	}
 	buffer[AR_FILENAME_LEN] = '\0';
 	/* Fix some padding issues */
 	if (buffer[AR_FILENAME_LEN - 1] != '/' && buffer[AR_FILENAME_LEN - 1] != ' ') {
 		// Find padding offset
-		tmp = (char *)rz_str_lchr (buffer, ' ');
+		tmp = (char *)rz_str_lchr(buffer, ' ');
 		if (!tmp) {
 			goto fail;
 		}
-		int dif = (int) (tmp - buffer);
+		int dif = (int)(tmp - buffer);
 		dif = 31 - dif;
 		// Re-read the whole filename
-		rz_buf_seek (b, -dif, RZ_BUF_CUR);
-		r = ar_read (b, buffer, AR_FILENAME_LEN);
+		rz_buf_seek(b, -dif, RZ_BUF_CUR);
+		r = ar_read(b, buffer, AR_FILENAME_LEN);
 		if (r != AR_FILENAME_LEN) {
 			goto fail;
 		}
 	}
-	free (curfile);
-	curfile = strdup (buffer);
+	free(curfile);
+	curfile = strdup(buffer);
 	if (!curfile) {
 		goto fail;
 	}
 	/* If /XX then refer to filename table later */
 	if (curfile[0] == '/' && curfile[1] >= '0' && curfile[1] <= '9') {
-		index = strtoul (buffer + 1, NULL, 10);
+		index = strtoul(buffer + 1, NULL, 10);
 	} else if (curfile[0] != '/') {
 		/* Read filename */
-		tmp = strchr (curfile, '/');
+		tmp = strchr(curfile, '/');
 		if (!tmp) {
 			goto fail;
 		}
 		*tmp = '\0';
 		if (files) {
-			rz_list_append (files, strdup (curfile));
+			rz_list_append(files, strdup(curfile));
 		}
 	}
 	/* Timestamp 12
@@ -176,59 +176,59 @@ int ar_read_file(RzBuffer *b, char *buffer, bool lookup, RzList *files, const ch
 	 * File Mode  8
 	 * File Size 10
 	 * Header end 2 */
-	r = ar_read (b, buffer, 44);
+	r = ar_read(b, buffer, 44);
 	if (r != 44) {
 		goto fail;
 	}
 
-	filesize = strtoull (buffer + 32, &tmp, 10);
+	filesize = strtoull(buffer + 32, &tmp, 10);
 
 	/* Header end */
-	if (strncmp (buffer + 42, AR_FILE_HEADER_END, 2)) {
+	if (strncmp(buffer + 42, AR_FILE_HEADER_END, 2)) {
 		goto fail;
 	}
 
 	/* File content */
 	if (!lookup && filename) {
 		/* Check filename */
-		if (index == index_filename || !strcmp (curfile, filename)) {
+		if (index == index_filename || !strcmp(curfile, filename)) {
 			rz_buf_resize(b, filesize);
-			free (curfile);
-			return rz_buf_size (b);
+			free(curfile);
+			return rz_buf_size(b);
 		}
 	}
-	(void)ar_read (b, buffer, 1);
+	(void)ar_read(b, buffer, 1);
 
-	rz_buf_seek (b, filesize - 1, RZ_BUF_CUR);
-	free (curfile);
+	rz_buf_seek(b, filesize - 1, RZ_BUF_CUR);
+	free(curfile);
 	return filesize;
 fail:
-	free (curfile);
+	free(curfile);
 	return 0;
 }
 
 int ar_read_filename_table(RzBuffer *b, char *buffer, RzList *files, const char *filename) {
-	int r = ar_read (b, buffer, AR_FILENAME_LEN);
+	int r = ar_read(b, buffer, AR_FILENAME_LEN);
 	if (r != AR_FILENAME_LEN) {
 		return 0;
 	}
-	if (strncmp (buffer, "//", 2)) {
+	if (strncmp(buffer, "//", 2)) {
 		// What we read was not a filename table, just go back
-		rz_buf_seek (b, -AR_FILENAME_LEN, RZ_BUF_CUR);
+		rz_buf_seek(b, -AR_FILENAME_LEN, RZ_BUF_CUR);
 		return 0;
 	}
 
 	/* Read table size */
-	rz_buf_seek (b, 32, RZ_BUF_CUR);
-	r = ar_read (b, buffer, 10);
+	rz_buf_seek(b, 32, RZ_BUF_CUR);
+	r = ar_read(b, buffer, 10);
 	if (r != 10) {
 		return 0;
 	}
-	ut64 tablesize = strtoull (buffer, NULL, 10);
+	ut64 tablesize = strtoull(buffer, NULL, 10);
 
 	/* Header end */
-	r = ar_read (b, buffer, 2);
-	if (strncmp (buffer, AR_FILE_HEADER_END, 2)) {
+	r = ar_read(b, buffer, 2);
+	if (strncmp(buffer, AR_FILE_HEADER_END, 2)) {
 		return 0;
 	}
 
@@ -236,18 +236,18 @@ int ar_read_filename_table(RzBuffer *b, char *buffer, RzList *files, const char 
 	ut64 len = 0;
 	ut32 index = 0;
 	while (r && len < tablesize) {
-		r = ar_read_until_slash (b, buffer, tablesize - len);
-		if (filename && !strcmp (filename, (char *) buffer)) {
+		r = ar_read_until_slash(b, buffer, tablesize - len);
+		if (filename && !strcmp(filename, (char *)buffer)) {
 			index_filename = index;
 		}
-		if (*(char *) buffer == '\n') {
+		if (*(char *)buffer == '\n') {
 			break;
 		}
-		rz_list_append (files, strdup ((char *) buffer));
+		rz_list_append(files, strdup((char *)buffer));
 		/* End slash plus separation character ("/\n") */
 		len += r + 2;
 		/* Separation character (not always '\n') */
-		rz_buf_seek (b, 1, RZ_BUF_CUR);
+		rz_buf_seek(b, 1, RZ_BUF_CUR);
 		index++;
 	}
 	return len;

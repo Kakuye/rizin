@@ -14,4 +14,4 @@ int ar_read_until_slash(RzBuffer *b, char *buffer, int limit);
 int ar_read_header(RzBuffer *b, char *buffer);
 int ar_read_file(RzBuffer *b, char *buffer, bool lookup, RzList *files, const char *filename);
 int ar_read_filename_table(RzBuffer *b, char *buffer, RzList *files, const char *filename);
-#endif	// _AR_H
+#endif // _AR_H

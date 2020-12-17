@@ -9,59 +9,59 @@
 #error Old Capstone not supported
 #endif
 
-#define esilprintf(op, fmt, ...) rz_strbuf_setf (&op->esil, fmt, ##__VA_ARGS__)
-#define INSOP(n) insn->detail->sparc.operands[n]
-#define INSCC insn->detail->sparc.cc
+#define esilprintf(op, fmt, ...) rz_strbuf_setf(&op->esil, fmt, ##__VA_ARGS__)
+#define INSOP(n)                 insn->detail->sparc.operands[n]
+#define INSCC                    insn->detail->sparc.cc
 
 static void opex(RzStrBuf *buf, csh handle, cs_insn *insn) {
 	int i;
-	rz_strbuf_init (buf);
-	rz_strbuf_append (buf, "{");
+	rz_strbuf_init(buf);
+	rz_strbuf_append(buf, "{");
 	cs_sparc *x = &insn->detail->sparc;
-	rz_strbuf_append (buf, "\"operands\":[");
+	rz_strbuf_append(buf, "\"operands\":[");
 	for (i = 0; i < x->op_count; i++) {
 		cs_sparc_op *op = &x->operands[i];
 		if (i > 0) {
-			rz_strbuf_append (buf, ",");
+			rz_strbuf_append(buf, ",");
 		}
-		rz_strbuf_append (buf, "{");
+		rz_strbuf_append(buf, "{");
 		switch (op->type) {
 		case SPARC_OP_REG:
-			rz_strbuf_append (buf, "\"type\":\"reg\"");
-			rz_strbuf_appendf (buf, ",\"value\":\"%s\"", cs_reg_name (handle, op->reg));
+			rz_strbuf_append(buf, "\"type\":\"reg\"");
+			rz_strbuf_appendf(buf, ",\"value\":\"%s\"", cs_reg_name(handle, op->reg));
 			break;
 		case SPARC_OP_IMM:
-			rz_strbuf_append (buf, "\"type\":\"imm\"");
-			rz_strbuf_appendf (buf, ",\"value\":%" PFMT64d, (st64)op->imm);
+			rz_strbuf_append(buf, "\"type\":\"imm\"");
+			rz_strbuf_appendf(buf, ",\"value\":%" PFMT64d, (st64)op->imm);
 			break;
 		case SPARC_OP_MEM:
-			rz_strbuf_append (buf, "\"type\":\"mem\"");
+			rz_strbuf_append(buf, "\"type\":\"mem\"");
 			if (op->mem.base != SPARC_REG_INVALID) {
-				rz_strbuf_appendf (buf, ",\"base\":\"%s\"", cs_reg_name (handle, op->mem.base));
+				rz_strbuf_appendf(buf, ",\"base\":\"%s\"", cs_reg_name(handle, op->mem.base));
 			}
-			rz_strbuf_appendf (buf, ",\"disp\":%" PFMT64d, (st64)op->mem.disp);
+			rz_strbuf_appendf(buf, ",\"disp\":%" PFMT64d, (st64)op->mem.disp);
 			break;
 		default:
-			rz_strbuf_append (buf, "\"type\":\"invalid\"");
+			rz_strbuf_append(buf, "\"type\":\"invalid\"");
 			break;
 		}
-		rz_strbuf_append (buf, "}");
+		rz_strbuf_append(buf, "}");
 	}
-	rz_strbuf_append (buf, "]");
-	rz_strbuf_append (buf, "}");
+	rz_strbuf_append(buf, "]");
+	rz_strbuf_append(buf, "}");
 }
 
 static int parse_reg_name(RzRegItem *reg, csh handle, cs_insn *insn, int reg_num) {
 	if (!reg) {
 		return -1;
 	}
-	switch (INSOP (reg_num).type) {
+	switch (INSOP(reg_num).type) {
 	case SPARC_OP_REG:
-		reg->name = (char *)cs_reg_name (handle, INSOP (reg_num).reg);
+		reg->name = (char *)cs_reg_name(handle, INSOP(reg_num).reg);
 		break;
 	case SPARC_OP_MEM:
-		if (INSOP (reg_num).mem.base != SPARC_REG_INVALID) {
-			reg->name = (char *)cs_reg_name (handle, INSOP (reg_num).mem.base);
+		if (INSOP(reg_num).mem.base != SPARC_REG_INVALID) {
+			reg->name = (char *)cs_reg_name(handle, INSOP(reg_num).mem.base);
 			break;
 		}
 	default:
@@ -75,19 +75,19 @@ static void op_fillval(RzAnalysisOp *op, csh handle, cs_insn *insn) {
 	switch (op->type & RZ_ANALYSIS_OP_TYPE_MASK) {
 	case RZ_ANALYSIS_OP_TYPE_LOAD:
 		if (INSOP(0).type == SPARC_OP_MEM) {
-			ZERO_FILL (reg);
-			op->src[0] = rz_analysis_value_new ();
+			ZERO_FILL(reg);
+			op->src[0] = rz_analysis_value_new();
 			op->src[0]->reg = &reg;
-			parse_reg_name (op->src[0]->reg, handle, insn, 0);
+			parse_reg_name(op->src[0]->reg, handle, insn, 0);
 			op->src[0]->delta = INSOP(0).mem.disp;
 		}
 		break;
 	case RZ_ANALYSIS_OP_TYPE_STORE:
 		if (INSOP(1).type == SPARC_OP_MEM) {
-			ZERO_FILL (reg);
-			op->dst = rz_analysis_value_new ();
+			ZERO_FILL(reg);
+			op->dst = rz_analysis_value_new();
 			op->dst->reg = &reg;
-			parse_reg_name (op->dst->reg, handle, insn, 1);
+			parse_reg_name(op->dst->reg, handle, insn, 1);
 			op->dst->delta = INSOP(1).mem.disp;
 		}
 		break;
@@ -105,28 +105,28 @@ static int analop(RzAnalysis *a, RzAnalysisOp *op, ut64 addr, const ut8 *buf, in
 	}
 
 	mode = CS_MODE_LITTLE_ENDIAN;
-	if (!strcmp (a->cpu, "v9")) {
+	if (!strcmp(a->cpu, "v9")) {
 		mode |= CS_MODE_V9;
 	}
 	if (mode != omode) {
-		cs_close (&handle);
+		cs_close(&handle);
 		handle = 0;
 		omode = mode;
 	}
 	if (handle == 0) {
-		ret = cs_open (CS_ARCH_SPARC, mode, &handle);
+		ret = cs_open(CS_ARCH_SPARC, mode, &handle);
 		if (ret != CS_ERR_OK) {
 			return -1;
 		}
-		cs_option (handle, CS_OPT_DETAIL, CS_OPT_ON);
+		cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 	}
 	// capstone-next
-	n = cs_disasm (handle, (const ut8*)buf, len, addr, 1, &insn);
+	n = cs_disasm(handle, (const ut8 *)buf, len, addr, 1, &insn);
 	if (n < 1) {
 		op->type = RZ_ANALYSIS_OP_TYPE_ILL;
 	} else {
 		if (mask & RZ_ANALYSIS_OP_MASK_OPEX) {
-			opex (&op->opex, handle, insn);
+			opex(&op->opex, handle, insn);
 		}
 		op->size = insn->size;
 		op->id = insn->id;
@@ -214,7 +214,7 @@ static int analop(RzAnalysis *a, RzAnalysisOp *op, ut64 addr, const ut8 *buf, in
 				op->type = RZ_ANALYSIS_OP_TYPE_CJMP;
 				op->delay = 1;
 				if (INSCC != SPARC_CC_ICC_N) { // never
-					op->jump = INSOP (1).imm;
+					op->jump = INSOP(1).imm;
 				}
 				if (INSCC != SPARC_CC_ICC_A) { // always
 					op->fail = addr + 8;
@@ -224,7 +224,7 @@ static int analop(RzAnalysis *a, RzAnalysisOp *op, ut64 addr, const ut8 *buf, in
 				op->type = RZ_ANALYSIS_OP_TYPE_CJMP;
 				op->delay = 1;
 				if (INSCC != SPARC_CC_ICC_N) { // never
-					op->jump = INSOP (0).imm;
+					op->jump = INSOP(0).imm;
 				}
 				if (INSCC != SPARC_CC_ICC_A) { // always
 					op->fail = addr + 8;
@@ -311,15 +311,15 @@ static int analop(RzAnalysis *a, RzAnalysisOp *op, ut64 addr, const ut8 *buf, in
 			break;
 		}
 		if (mask & RZ_ANALYSIS_OP_MASK_VAL) {
-			op_fillval (op, handle, insn);
+			op_fillval(op, handle, insn);
 		}
-		cs_free (insn, n);
+		cs_free(insn, n);
 	}
 	return op->size;
 }
 
 static bool set_reg_profile(RzAnalysis *analysis) {
-	const char *p = \
+	const char *p =
 		"=PC	pc\n"
 		"=SP	sp\n"
 		"=BP	fp\n"
@@ -371,9 +371,8 @@ static bool set_reg_profile(RzAnalysis *analysis) {
 		"gpr	i5	.32	132	0\n"
 		"gpr	i6	.32	136	0\n"
 		"gpr	fp	.32	136	0\n"
-		"gpr	i7	.32	140	0\n"
-	;
-	return rz_reg_set_profile_string (analysis->reg, p);
+		"gpr	i7	.32	140	0\n";
+	return rz_reg_set_profile_string(analysis->reg, p);
 }
 
 static int archinfo(RzAnalysis *analysis, int q) {
@@ -386,7 +385,7 @@ RzAnalysisPlugin rz_analysis_plugin_sparc_cs = {
 	.esil = true,
 	.license = "BSD",
 	.arch = "sparc",
-	.bits = 32|64,
+	.bits = 32 | 64,
 	.archinfo = archinfo,
 	.op = &analop,
 	.set_reg_profile = &set_reg_profile,

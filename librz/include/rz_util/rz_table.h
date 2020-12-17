@@ -81,7 +81,7 @@ RZ_API void rz_table_group(RTable *t, int nth, RTableSelector fcn);
 RZ_API bool rz_table_query(RTable *t, const char *q);
 RZ_API void rz_table_hide_header(RTable *t);
 RZ_API bool rz_table_align(RTable *t, int nth, int align);
-RZ_API void rz_table_visual_list(RTable *table, RzList* list, ut64 seek, ut64 len, int width, bool va);
+RZ_API void rz_table_visual_list(RTable *table, RzList *list, ut64 seek, ut64 len, int width, bool va);
 RZ_API RTable *rz_table_clone(RTable *t);
 RZ_API RTable *rz_table_push(RTable *t);
 RZ_API RTable *rz_table_pop(RTable *t);

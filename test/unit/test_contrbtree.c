@@ -42,7 +42,7 @@ static int strbuf_num_cmp1(void *incoming, void *in, void *user) {
 }
 
 bool test_r_rbtree_cont_delete() {
-	RContRBTree *tree = rz_rbtree_cont_newf ((RContRBFree)rz_strbuf_free);
+	RContRBTree *tree = rz_rbtree_cont_newf((RContRBFree)rz_strbuf_free);
 	rz_rbtree_cont_insert(tree, rz_strbuf_new("13"), strbuf_num_cmp0, NULL);
 	rz_rbtree_cont_insert(tree, rz_strbuf_new("0x9090"), strbuf_num_cmp0, NULL);
 	rz_rbtree_cont_insert(tree, rz_strbuf_new("42"), strbuf_num_cmp0, NULL);
@@ -62,9 +62,8 @@ bool test_r_rbtree_cont_delete() {
 	mu_end;
 }
 
-
 int main(int argc, char *argv[]) {
-	mu_run_test (test_r_rbtree_cont_insert);
-	mu_run_test (test_r_rbtree_cont_delete);
+	mu_run_test(test_r_rbtree_cont_insert);
+	mu_run_test(test_r_rbtree_cont_delete);
 	return tests_run != tests_passed;
 }

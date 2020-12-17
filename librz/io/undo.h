@@ -4,15 +4,15 @@
 struct undow_t {
 	int set;
 	ut64 off;
-	ut8 *o;   /* old data */
-	ut8 *n;   /* new data */
+	ut8 *o; /* old data */
+	ut8 *n; /* new data */
 	int len; /* length */
 	struct list_head list;
 };
 
-enum { 
+enum {
 	UNDO_WRITE_UNSET = 0,
-	UNDO_WRITE_SET   = 1
+	UNDO_WRITE_SET = 1
 };
 
 void undo_seek(void);

@@ -35,7 +35,7 @@
 #else
 #define CONTEXT_XSTATE (0x00010040)
 #endif
-#define XSTATE_AVX (XSTATE_GSSE)
+#define XSTATE_AVX      (XSTATE_GSSE)
 #define XSTATE_MASK_AVX (XSTATE_MASK_GSSE)
 #ifndef CONTEXT_ALL
 #define CONTEXT_ALL 1048607
@@ -110,7 +110,7 @@ typedef struct {
 	DWORD dwExitCode;
 } THREAD_ITEM, *PTHREAD_ITEM;
 
-typedef struct{
+typedef struct {
 	int pid;
 	HANDLE hFile;
 	void *BaseOfDll;
@@ -118,28 +118,28 @@ typedef struct{
 	char *Name;
 } LIB_ITEM, *PLIB_ITEM;
 
-static DWORD (WINAPI *w32_GetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
-static BOOL (WINAPI *w32_GetModuleInformation)(HANDLE, HMODULE, LPMODULEINFO, DWORD);
-static BOOL (WINAPI *w32_DebugActiveProcessStop)(DWORD);
-static HANDLE (WINAPI *w32_OpenThread)(DWORD, BOOL, DWORD);
-static BOOL (WINAPI *w32_DebugBreakProcess)(HANDLE);
-static DWORD (WINAPI *w32_GetThreadId)(HANDLE); // Vista
-static DWORD (WINAPI *w32_GetProcessId)(HANDLE); // XP
-static HANDLE (WINAPI *w32_OpenProcess)(DWORD, BOOL, DWORD);
-static BOOL (WINAPI *w32_QueryFullProcessImageName)(HANDLE, DWORD, LPTSTR, PDWORD);
-static DWORD (WINAPI *w32_GetMappedFileName)(HANDLE, LPVOID, LPTSTR, DWORD);
-static NTSTATUS (WINAPI *w32_NtQuerySystemInformation)(ULONG, PVOID, ULONG, PULONG);
-static NTSTATUS (WINAPI *w32_NtQueryInformationThread)(HANDLE, ULONG, PVOID, ULONG, PULONG);
-static NTSTATUS (WINAPI *w32_NtDuplicateObject)(HANDLE, HANDLE, HANDLE, PHANDLE, ACCESS_MASK, ULONG, ULONG);
-static NTSTATUS (WINAPI *w32_NtQueryObject)(HANDLE, ULONG, PVOID, ULONG, PULONG);
+static DWORD(WINAPI *w32_GetModuleBaseName)(HANDLE, HMODULE, LPTSTR, DWORD);
+static BOOL(WINAPI *w32_GetModuleInformation)(HANDLE, HMODULE, LPMODULEINFO, DWORD);
+static BOOL(WINAPI *w32_DebugActiveProcessStop)(DWORD);
+static HANDLE(WINAPI *w32_OpenThread)(DWORD, BOOL, DWORD);
+static BOOL(WINAPI *w32_DebugBreakProcess)(HANDLE);
+static DWORD(WINAPI *w32_GetThreadId)(HANDLE); // Vista
+static DWORD(WINAPI *w32_GetProcessId)(HANDLE); // XP
+static HANDLE(WINAPI *w32_OpenProcess)(DWORD, BOOL, DWORD);
+static BOOL(WINAPI *w32_QueryFullProcessImageName)(HANDLE, DWORD, LPTSTR, PDWORD);
+static DWORD(WINAPI *w32_GetMappedFileName)(HANDLE, LPVOID, LPTSTR, DWORD);
+static NTSTATUS(WINAPI *w32_NtQuerySystemInformation)(ULONG, PVOID, ULONG, PULONG);
+static NTSTATUS(WINAPI *w32_NtQueryInformationThread)(HANDLE, ULONG, PVOID, ULONG, PULONG);
+static NTSTATUS(WINAPI *w32_NtDuplicateObject)(HANDLE, HANDLE, HANDLE, PHANDLE, ACCESS_MASK, ULONG, ULONG);
+static NTSTATUS(WINAPI *w32_NtQueryObject)(HANDLE, ULONG, PVOID, ULONG, PULONG);
 // fpu access API
-static ut64 (WINAPI *w32_GetEnabledXStateFeatures)();
-static BOOL (WINAPI *w32_InitializeContext)(PVOID, DWORD, PCONTEXT*, PDWORD);
-static BOOL (WINAPI *w32_GetXStateFeaturesMask)(PCONTEXT Context, PDWORD64);
-static PVOID (WINAPI *w32_LocateXStateFeature)(PCONTEXT Context, DWORD, PDWORD);
-static BOOL (WINAPI *w32_SetXStateFeaturesMask)(PCONTEXT Context, DWORD64);
-static DWORD (WINAPI *w32_GetModuleFileNameEx)(HANDLE, HMODULE, LPTSTR, DWORD);
-static HANDLE (WINAPI *w32_CreateToolhelp32Snapshot)(DWORD, DWORD);
+static ut64(WINAPI *w32_GetEnabledXStateFeatures)();
+static BOOL(WINAPI *w32_InitializeContext)(PVOID, DWORD, PCONTEXT *, PDWORD);
+static BOOL(WINAPI *w32_GetXStateFeaturesMask)(PCONTEXT Context, PDWORD64);
+static PVOID(WINAPI *w32_LocateXStateFeature)(PCONTEXT Context, DWORD, PDWORD);
+static BOOL(WINAPI *w32_SetXStateFeaturesMask)(PCONTEXT Context, DWORD64);
+static DWORD(WINAPI *w32_GetModuleFileNameEx)(HANDLE, HMODULE, LPTSTR, DWORD);
+static HANDLE(WINAPI *w32_CreateToolhelp32Snapshot)(DWORD, DWORD);
 
 // APIs
 int w32_init(RzDebug *dbg);
@@ -149,7 +149,7 @@ int w32_reg_write(RzDebug *dbg, int type, const ut8 *buf, int size);
 
 int w32_attach(RzDebug *dbg, int pid);
 int w32_detach(RzDebug *dbg, int pid);
-int w32_attach_new_process(RzDebug* dbg, int pid);
+int w32_attach_new_process(RzDebug *dbg, int pid);
 int w32_select(RzDebug *dbg, int pid, int tid);
 int w32_kill(RzDebug *dbg, int pid, int tid, int sig);
 void w32_break_process(void *user);

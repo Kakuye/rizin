@@ -10,60 +10,60 @@
 #error Old Capstone not supported
 #endif
 
-#define esilprintf(op, fmt, ...) rz_strbuf_setf (&op->esil, fmt, ##__VA_ARGS__)
-#define INSOP(n) insn->detail->sysz.operands[n]
+#define esilprintf(op, fmt, ...) rz_strbuf_setf(&op->esil, fmt, ##__VA_ARGS__)
+#define INSOP(n)                 insn->detail->sysz.operands[n]
 
 static void opex(RzStrBuf *buf, csh handle, cs_insn *insn) {
 	int i;
-	rz_strbuf_init (buf);
-	rz_strbuf_append (buf, "{");
+	rz_strbuf_init(buf);
+	rz_strbuf_append(buf, "{");
 	cs_sysz *x = &insn->detail->sysz;
-	rz_strbuf_append (buf, "\"operands\":[");
+	rz_strbuf_append(buf, "\"operands\":[");
 	for (i = 0; i < x->op_count; i++) {
 		cs_sysz_op *op = &x->operands[i];
 		if (i > 0) {
-			rz_strbuf_append (buf, ",");
+			rz_strbuf_append(buf, ",");
 		}
-		rz_strbuf_append (buf, "{");
+		rz_strbuf_append(buf, "{");
 		switch (op->type) {
 		case SYSZ_OP_REG:
-			rz_strbuf_append (buf, "\"type\":\"reg\"");
-			rz_strbuf_appendf (buf, ",\"value\":\"%s\"", cs_reg_name (handle, op->reg));
+			rz_strbuf_append(buf, "\"type\":\"reg\"");
+			rz_strbuf_appendf(buf, ",\"value\":\"%s\"", cs_reg_name(handle, op->reg));
 			break;
 		case SYSZ_OP_IMM:
-			rz_strbuf_append (buf, "\"type\":\"imm\"");
-			rz_strbuf_appendf (buf, ",\"value\":%" PFMT64d, (st64)op->imm);
+			rz_strbuf_append(buf, "\"type\":\"imm\"");
+			rz_strbuf_appendf(buf, ",\"value\":%" PFMT64d, (st64)op->imm);
 			break;
 		case SYSZ_OP_MEM:
-			rz_strbuf_append (buf, "\"type\":\"mem\"");
+			rz_strbuf_append(buf, "\"type\":\"mem\"");
 			if (op->mem.base != SYSZ_REG_INVALID) {
-				rz_strbuf_appendf (buf, ",\"base\":\"%s\"", cs_reg_name (handle, op->mem.base));
+				rz_strbuf_appendf(buf, ",\"base\":\"%s\"", cs_reg_name(handle, op->mem.base));
 			}
-			rz_strbuf_appendf (buf, ",\"disp\":%"PFMT64d"", (st64)op->mem.disp);
+			rz_strbuf_appendf(buf, ",\"disp\":%" PFMT64d "", (st64)op->mem.disp);
 			break;
 		default:
-			rz_strbuf_append (buf, "\"type\":\"invalid\"");
+			rz_strbuf_append(buf, "\"type\":\"invalid\"");
 			break;
 		}
-		rz_strbuf_append (buf, "}");
+		rz_strbuf_append(buf, "}");
 	}
-	rz_strbuf_append (buf, "]}");
+	rz_strbuf_append(buf, "]}");
 }
 
 static int analop(RzAnalysis *a, RzAnalysisOp *op, ut64 addr, const ut8 *buf, int len, RzAnalysisOpMask mask) {
 	csh handle;
 	cs_insn *insn;
 	int mode = CS_MODE_BIG_ENDIAN;
-	int ret = cs_open (CS_ARCH_SYSZ, mode, &handle);
+	int ret = cs_open(CS_ARCH_SYSZ, mode, &handle);
 	if (ret == CS_ERR_OK) {
-		cs_option (handle, CS_OPT_DETAIL, CS_OPT_ON);
+		cs_option(handle, CS_OPT_DETAIL, CS_OPT_ON);
 		// capstone-next
-		int n = cs_disasm (handle, (const ut8*)buf, len, addr, 1, &insn);
+		int n = cs_disasm(handle, (const ut8 *)buf, len, addr, 1, &insn);
 		if (n < 1) {
 			op->type = RZ_ANALYSIS_OP_TYPE_ILL;
 		} else {
 			if (mask & RZ_ANALYSIS_OP_MASK_OPEX) {
-				opex (&op->opex, handle, insn);
+				opex(&op->opex, handle, insn);
 			}
 			op->size = insn->size;
 			switch (insn->id) {
@@ -126,7 +126,7 @@ static int analop(RzAnalysis *a, RzAnalysisOp *op, ut64 addr, const ut8 *buf, in
 			case SYSZ_INS_JG:
 				op->type = RZ_ANALYSIS_OP_TYPE_CJMP;
 				op->jump = INSOP(0).imm;
-				op->fail = addr+op->size;
+				op->fail = addr + op->size;
 				break;
 			case SYSZ_INS_J:
 				op->type = RZ_ANALYSIS_OP_TYPE_JMP;
@@ -135,8 +135,8 @@ static int analop(RzAnalysis *a, RzAnalysisOp *op, ut64 addr, const ut8 *buf, in
 				break;
 			}
 		}
-		cs_free (insn, n);
-		cs_close (&handle);
+		cs_free(insn, n);
+		cs_close(&handle);
 	}
 	return op->size;
 }
@@ -175,9 +175,8 @@ static bool set_reg_profile(RzAnalysis *analysis) {
 		"gpr	r12	.32	48	0\n"
 		"gpr	r13	.32	52	0\n"
 		"gpr	r14	.32	56	0\n"
-		"gpr	r15	.32	60	0\n"
-	;
-	return rz_reg_set_profile_string (analysis->reg, p);
+		"gpr	r15	.32	60	0\n";
+	return rz_reg_set_profile_string(analysis->reg, p);
 }
 
 static int archinfo(RzAnalysis *analysis, int q) {
@@ -198,7 +197,7 @@ RzAnalysisPlugin rz_analysis_plugin_sysz = {
 	.esil = false,
 	.license = "BSD",
 	.arch = "sysz",
-	.bits = 32|64,
+	.bits = 32 | 64,
 	.op = &analop,
 	.archinfo = archinfo,
 	.set_reg_profile = &set_reg_profile,

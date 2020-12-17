@@ -38,11 +38,11 @@ struct hunklist {
 static int splitlines(const char *a, int len, struct line **lr) {
 	int h, i;
 	const char *p, *b = a;
-	const char * const plast = a + len - 1;
+	const char *const plast = a + len - 1;
 	struct line *l;
 
 	if (!a) {
-		eprintf ("null pointer received\n");
+		eprintf("null pointer received\n");
 		return 0;
 	}
 
@@ -120,7 +120,7 @@ static int equatelines(struct line *a, int an, struct line *b, int bn) {
 		/* find the equivalence class */
 		for (j = b[i].h & buckets; h[j].pos != INT_MAX;
 			j = (j + 1) & buckets) {
-			if (!cmp (b + i, b + h[j].pos)) {
+			if (!cmp(b + i, b + h[j].pos)) {
 				break;
 			}
 		}
@@ -140,7 +140,7 @@ static int equatelines(struct line *a, int an, struct line *b, int bn) {
 		/* find the equivalence class */
 		for (j = a[i].h & buckets; h[j].pos != INT_MAX;
 			j = (j + 1) & buckets) {
-			if (!cmp (a + i, b + h[j].pos)) {
+			if (!cmp(a + i, b + h[j].pos)) {
 				break;
 			}
 		}
@@ -159,8 +159,7 @@ static int equatelines(struct line *a, int an, struct line *b, int bn) {
 }
 
 static int longest_match(struct line *a, struct line *b, struct pos *pos,
-			 int a1, int a2, int b1, int b2, int *omi, int *omj)
-{
+	int a1, int a2, int b1, int b2, int *omi, int *omj) {
 	int mi = a1, mj = b1, mk = 0, mb = 0, i, j, k;
 
 	for (i = a1; i < a2; i++) {
@@ -211,8 +210,7 @@ static int longest_match(struct line *a, struct line *b, struct pos *pos,
 }
 
 static void recurse(struct line *a, struct line *b, struct pos *pos,
-		    int a1, int a2, int b1, int b2, struct hunklist *l)
-{
+	int a1, int a2, int b1, int b2, struct hunklist *l) {
 	int i, j, k;
 
 	/* find the longest match in this chunk */
@@ -231,8 +229,7 @@ static void recurse(struct line *a, struct line *b, struct pos *pos,
 	recurse(a, b, pos, i + k, a2, j + k, b2, l);
 }
 
-static struct hunklist diff(struct line *a, int an, struct line *b, int bn)
-{
+static struct hunklist diff(struct line *a, int an, struct line *b, int bn) {
 	struct hunklist l;
 	struct hunk *curr;
 	struct pos *pos;
@@ -243,7 +240,7 @@ static struct hunklist diff(struct line *a, int an, struct line *b, int bn)
 	pos = (struct pos *)calloc(bn ? bn : 1, sizeof(struct pos));
 	/* we can't have more matches than lines in the shorter file */
 	l.head = l.base = (struct hunk *)malloc(sizeof(struct hunk) *
-	                                        ((an<bn ? an:bn) + 1));
+		((an < bn ? an : bn) + 1));
 
 	if (pos && l.base && t) {
 		/* generate the matching block list */
@@ -257,7 +254,7 @@ static struct hunklist diff(struct line *a, int an, struct line *b, int bn)
 
 	/* normalize the hunk list, try to push each hunk towards the end */
 	for (curr = l.base; curr != l.head; curr++) {
-		struct hunk *next = curr+1;
+		struct hunk *next = curr + 1;
 		int shift = 0;
 
 		if (next == l.head) {
@@ -265,11 +262,11 @@ static struct hunklist diff(struct line *a, int an, struct line *b, int bn)
 		}
 
 		if (curr->a2 == next->a1) {
-			while (curr->a2 + shift < an && curr->b2 + shift < bn && !cmp (a + curr->a2 + shift, b + curr->b2 + shift)) {
+			while (curr->a2 + shift < an && curr->b2 + shift < bn && !cmp(a + curr->a2 + shift, b + curr->b2 + shift)) {
 				shift++;
 			}
 		} else if (curr->b2 == next->b1) {
-			while (curr->b2 + shift < bn && curr->a2 + shift < an && !cmp (b + curr->b2 + shift, a + curr->a2 + shift)) {
+			while (curr->b2 + shift < bn && curr->a2 + shift < an && !cmp(b + curr->b2 + shift, a + curr->a2 + shift)) {
 				shift++;
 			}
 		}
@@ -296,25 +293,25 @@ RZ_API int rz_diff_buffers_delta(RzDiff *d, const ut8 *sa, int la, const ut8 *sb
 	int an, bn, offa, rlen, offb, len = 0;
 	int hits = -1;
 
-	an = splitlines ((const char *)sa, la, &al);
-	if (an<0) {
-		free (al);
+	an = splitlines((const char *)sa, la, &al);
+	if (an < 0) {
+		free(al);
 		return -1;
 	}
-	bn = splitlines ((const char *)sb, lb, &bl);
-	if (bn<0) {
-		free (al);
-		free (bl);
+	bn = splitlines((const char *)sb, lb, &bl);
+	if (bn < 0) {
+		free(al);
+		free(bl);
 		return -1;
 	}
 	if (!al || !bl) {
-		eprintf ("bindiff_buffers: Out of memory.\n");
+		eprintf("bindiff_buffers: Out of memory.\n");
 		goto beach;
 	}
 
-	l = diff (al, an, bl, bn);
+	l = diff(al, an, bl, bn);
 	if (!l.head) {
-		eprintf ("bindiff_buffers: Out of memory.\n");
+		eprintf("bindiff_buffers: Out of memory.\n");
 		goto beach;
 	}
 
@@ -324,7 +321,7 @@ RZ_API int rz_diff_buffers_delta(RzDiff *d, const ut8 *sa, int la, const ut8 *sb
 			len = bl[h->b1].l - bl[lb].l;
 			offa = al[la].l - al->l;
 			offb = al[h->a1].l - al->l;
-			rlen = offb-offa;
+			rlen = offb - offa;
 
 			if (d->callback) {
 				/* source file */
@@ -336,7 +333,7 @@ RZ_API int rz_diff_buffers_delta(RzDiff *d, const ut8 *sa, int la, const ut8 *sb
 				dop.b_off = offa; // XXX offb not used??
 				dop.b_buf = (ut8 *)bl[lb].l;
 				dop.b_len = len;
-				if (!d->callback (d, d->user, &dop)) {
+				if (!d->callback(d, d->user, &dop)) {
 					break;
 				}
 			}
@@ -356,10 +353,10 @@ RZ_API int rz_diff_buffers_delta(RzDiff *d, const ut8 *sa, int la, const ut8 *sb
 		la = h->a2;
 		lb = h->b2;
 	}
-	beach:
-	free (al);
-	free (bl);
-	free (l.base);
+beach:
+	free(al);
+	free(bl);
+	free(l.base);
 
 	return hits;
 }

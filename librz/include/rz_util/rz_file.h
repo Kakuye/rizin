@@ -53,9 +53,9 @@ RZ_API char *rz_file_slurp_lines_from_bottom(const char *file, int line);
 RZ_API int rz_file_mkstemp(const char *prefix, char **oname);
 RZ_API char *rz_file_tmpdir(void);
 RZ_API char *rz_file_readlink(const char *path);
-RZ_API bool rz_file_copy (const char *src, const char *dst);
-RZ_API RzList* rz_file_globsearch (const char *globbed_path, int maxdepth);
-RZ_API RMmap *rz_file_mmap_arch (RMmap *map, const char *filename, int fd);
+RZ_API bool rz_file_copy(const char *src, const char *dst);
+RZ_API RzList *rz_file_globsearch(const char *globbed_path, int maxdepth);
+RZ_API RMmap *rz_file_mmap_arch(RMmap *map, const char *filename, int fd);
 
 #ifdef __cplusplus
 }

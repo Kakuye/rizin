@@ -1,5 +1,5 @@
 #ifndef RZ_PJ_H
-#define RZ_PJ_H 1
+#define RZ_PJ_H                   1
 #define RZ_PRINT_JSON_DEPTH_LIMIT 128
 
 #include <rz_util/rz_strbuf.h>
@@ -80,4 +80,3 @@ RZ_API PJ *pj_j(PJ *j, const char *k);
 #endif
 
 #endif
-

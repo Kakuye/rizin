@@ -25,7 +25,7 @@ extern "C" {
 #if __WINDOWS__
 RZ_API HANDLE rz_sandbox_opendir(const char *path, WIN32_FIND_DATAW *entry);
 #else
-RZ_API DIR* rz_sandbox_opendir(const char *path);
+RZ_API DIR *rz_sandbox_opendir(const char *path);
 #endif
 RZ_API int rz_sandbox_truncate(int fd, ut64 length);
 RZ_API int rz_sandbox_lseek(int fd, ut64 addr, int mode);

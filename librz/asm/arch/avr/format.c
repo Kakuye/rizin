@@ -48,21 +48,21 @@ static int printDisassembledInstruction(char *out, const disassembledInstruction
 	if (AVR_Long_Instruction == AVR_LONG_INSTRUCTION_FOUND)
 		return 0;
 
-	strcat (out, dInstruction.instruction->mnemonic);
+	strcat(out, dInstruction.instruction->mnemonic);
 	if (dInstruction.instruction->numOperands > 0)
-		strcat (out, " ");
+		strcat(out, " ");
 
 	for (i = 0; i < dInstruction.instruction->numOperands; i++) {
 		/* If we're not on the first operand, but not on the last one either, print a comma separating
 		 * the operands. */
 		if (i > 0 && i != dInstruction.instruction->numOperands)
-			strcat (out, ", ");
+			strcat(out, ", ");
 		/* Format the disassembled operand into the string strOperand, and print it */
 		retVal = formatDisassembledOperand(strOperand, i, dInstruction, fOptions);
 		if (retVal < 0)
 			return retVal;
 		/* Print the operand and free if it's not NULL */
-		strcat (out, strOperand);
+		strcat(out, strOperand);
 	}
 
 	return 1;
@@ -91,7 +91,7 @@ static int formatDisassembledOperand(char *strOperand, int operandNum, const dis
 	case OPERAND_REGISTER_STARTR16:
 	case OPERAND_REGISTER_EVEN_PAIR_STARTR24:
 	case OPERAND_REGISTER_EVEN_PAIR:
-		retVal = sprintf (strOperand, "%s%d", OPERAND_PREFIX_REGISTER,
+		retVal = sprintf(strOperand, "%s%d", OPERAND_PREFIX_REGISTER,
 			dInstruction.operands[operandNum]);
 		break;
 	case OPERAND_DATA:
@@ -99,10 +99,10 @@ static int formatDisassembledOperand(char *strOperand, int operandNum, const dis
 		if (fOptions.options & FORMAT_OPTION_DATA_BIN) {
 			int i;
 			for (i = 7; i >= 0; i--) {
-				if (dInstruction.operands[operandNum] & (1<<i))
-					binary[7-i] = '1';
+				if (dInstruction.operands[operandNum] & (1 << i))
+					binary[7 - i] = '1';
 				else
-					binary[7-i] = '0';
+					binary[7 - i] = '0';
 			}
 			binary[8] = '\0';
 			retVal = sprintf(strOperand, "%s%s",
@@ -146,8 +146,8 @@ static int formatDisassembledOperand(char *strOperand, int operandNum, const dis
 //					retVal = sprintf(strOperand, "%s%d", OPERAND_PREFIX_BRANCH_ADDRESS, dInstruction.operands[operandNum]);
 			}
 #endif
-			retVal = sprintf(strOperand, "0x%x",
-				dInstruction.address + dInstruction.operands[operandNum]);
+		retVal = sprintf(strOperand, "0x%x",
+			dInstruction.address + dInstruction.operands[operandNum]);
 		//}
 		break;
 	case OPERAND_LONG_ABSOLUTE_ADDRESS:
@@ -161,13 +161,13 @@ static int formatDisassembledOperand(char *strOperand, int operandNum, const dis
 			dInstruction.operands[operandNum]);
 		break;
 	case OPERAND_WORD_DATA:
-		retVal = sprintf (strOperand, "%s%0*x",
+		retVal = sprintf(strOperand, "%s%0*x",
 			OPERAND_PREFIX_WORD_DATA,
 			fOptions.addressFieldWidth,
 			dInstruction.operands[operandNum]);
 		break;
 	case OPERAND_DES_ROUND:
-		retVal = sprintf (strOperand, "%s%02x",
+		retVal = sprintf(strOperand, "%s%02x",
 			OPERAND_PREFIX_WORD_DATA,
 			dInstruction.operands[operandNum]);
 		break;
